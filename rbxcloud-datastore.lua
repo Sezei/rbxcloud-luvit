@@ -17,8 +17,8 @@ return function(token,universeid)
 	local wrapper = {}
 	local url = 'https://apis.roblox.com/datastores/v1/universes/'..universeid;
 	local headers = {
-    	['x-api-key'] = token;
-		['Content-Type'] = 'application/json';
+    	{'x-api-key', token};
+		{'Content-Type','application/json'};
 	}
 
 	function wrapper.ListDataStoresAsync(prefix,limit,cursor)
