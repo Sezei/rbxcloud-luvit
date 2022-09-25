@@ -16,8 +16,8 @@ return function(token,universeid)
     local wrapper = {}
 	local url = 'https://apis.roblox.com/messaging-service/v1/universes/'..universeid..'/topics/';
 	local headers = {
-    	['x-api-key'] = token;
-		['Content-Type'] = 'application/json';
+    		{'x-api-key',token};
+		{'Content-Type','application/json'};
 	}
 
     function wrapper:PublishMessage(topic,message)
