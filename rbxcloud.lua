@@ -12,6 +12,14 @@
 local coro = require('coro-http');
 local json = require('json');
 
+local function toheaders(tbl)
+    local headers = {};
+    for k,v in pairs(tbl) do
+        headers[#headers+1] = {k,v};
+    end
+    return headers;
+end
+
 -- Create a new wrapper client
 return function(token,universeid)
 	local wrapper = {}
@@ -36,7 +44,7 @@ return function(token,universeid)
 		elseif not (prefix or limit) and cursor then
 			sendingto = sendingto..'?cursor='..cursor;
 		end
-		local res, body = coro.request('GET', sendingto, headers);
+		local res, body = coro.request('GET', sendingto, toheaders(headers));
 		if res.code == 200 then
 			return json.parse(body);
 		else
@@ -46,7 +54,7 @@ return function(token,universeid)
 
     function wrapper:PublishMessage(topic,message)
         local sendingto = 'https://apis.roblox.com/messaging-service/v1/universes/'..universeid..'/topics/'..topic;
-        local res, body = coro.request('POST', sendingto, headers, json.stringify({message = message}));
+        local res, body = coro.request('POST', sendingto, toheaders(headers), json.stringify({message = message}));
         if res.code == 200 then
             return json.parse(body);
         else
@@ -60,7 +68,8 @@ return function(token,universeid)
         end
         local sendingto = 'https://version-controller.roblox.com/v1/universes/'..universeid..'/versions';
         headers['Content-Type'] = 'application/xml';
-        local res, body = coro.request('POST', sendingto, headers, versionXML);
+        local res, body = coro.request('POST', sendingto, toheaders(headers), versionXML);
+        headers['Content-Type'] = 'application/json'; -- reset the header type
         if res.code == 200 then
             return json.parse(body);
         else
@@ -89,7 +98,7 @@ return function(token,universeid)
 			if cursor then
 				sendingto = sendingto..'&cursor='..cursor;
 			end
-			local res, body = coro.request('GET', sendingto, headers);
+			local res, body = coro.request('GET', sendingto, toheaders(headers));
 			if res.code == 200 then
 				return json.parse(body);
 			else
@@ -102,7 +111,7 @@ return function(token,universeid)
 			if not scope then scope = 'global'; end
 
 			local sendingto = url..'/standard-datastores/datastore/entries/entry?datastoreName='..datastoreName..'&entryKey='..entryKey..'&scope='..scope;
-			local res, body = coro.request('GET', sendingto, headers);
+			local res, body = coro.request('GET', sendingto, toheaders(headers));
 			if res.code == 200 then
 				return json.parse(body);
 			else
@@ -116,7 +125,7 @@ return function(token,universeid)
 			if not scope then scope = 'global'; end
 
 			local sendingto = url..'/standard-datastores/datastore/entries/entry?datastoreName='..datastoreName..'&entryKey='..entryKey..'&scope='..scope;
-			local res, body = coro.request('POST', sendingto, headers, json.stringify(entryValue));
+			local res, body = coro.request('POST', sendingto, toheaders(headers), json.stringify(entryValue));
 			if res.code == 200 then
 				return json.parse(body);
 			else
@@ -130,7 +139,7 @@ return function(token,universeid)
 			if not scope then scope = 'global'; end
 
 			local sendingto = url..'/standard-datastores/datastore/entries/entry/increment?datastoreName='..datastoreName..'&entryKey='..entryKey..'&scope='..scope..'&incrementBy='..IncrementBy;
-			local res, body = coro.request('POST', sendingto, headers);
+			local res, body = coro.request('POST', sendingto, toheaders(headers));
 			if res.code == 200 then
 				return json.parse(body);
 			else
@@ -143,7 +152,7 @@ return function(token,universeid)
 			if not scope then scope = 'global'; end
 
 			local sendingto = url..'/standard-datastores/datastore/entries/entry?datastoreName='..datastoreName..'&entryKey='..entryKey..'&scope='..scope;
-			local res, body = coro.request('DELETE', sendingto, headers);
+			local res, body = coro.request('DELETE', sendingto, toheaders(headers));
 			if res.code == 204 then
 				return true;
 			else
@@ -170,7 +179,7 @@ return function(token,universeid)
 			if cursor then
 				sendingto = sendingto..'&cursor='..cursor;
 			end
-			local res, body = coro.request('GET', sendingto, headers);
+			local res, body = coro.request('GET', sendingto, toheaders(headers));
 			if res.code == 200 then
 				return json.parse(body);
 			else
@@ -183,7 +192,7 @@ return function(token,universeid)
 			if not versionId then return false; end -- VersionId is required
 			if not scope then scope = 'global'; end -- Scope is optional, so we just default it to global.
 			local sendingto = url..'/standard-datastores/datastore/entries/entry/versions/version?datastoreName='..datastoreName..'&entryKey='..entryKey..'&scope='..scope..'&versionId='..versionId;
-			local res, body = coro.request('GET', sendingto, headers);
+			local res, body = coro.request('GET', sendingto, toheaders(headers));
 			if res.code == 200 then
 				return json.parse(body);
 			else
