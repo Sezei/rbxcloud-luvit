@@ -1,6 +1,6 @@
 --[[lit-meta
 	name = "Sezei/rbxcloud"
-	version = "1.0.0"
+	version = "1.1.0"
 	dependencies = {
 		'creationix/coro-http@3.2.3'
 	}
@@ -77,27 +77,101 @@ return function(token,universeid)
         end
     end
 
+    function wrapper:GetOrderedDataStores(name)
+        if not name then return false; end
+        local url = 'https://apis.roblox.com/ordered-data-stores';
+        local ordereddatastore = {};
+
+        function ordereddatastore:List(scope,parameters)
+            local sendingto = url..'/v1/universes/'..universeid..'/orderedDataStores/'..name..'/scopes/'..scope..'/entries'
+            if parameters and type(parameters)=='table' then
+                sendingto = sendingto..'?';
+                for k,v in pairs(parameters) do
+                    sendingto = sendingto..'&'..k..'='..v;
+                end
+            end
+            local res, body = coro.request('GET', sendingto, toheaders(headers));
+            if res.code == 200 then
+                return json.parse(body);
+            else
+                return res.code;
+            end
+        end;
+
+        function ordereddatastore:Create(scope,id,data)
+            local sendingto = url..'/v1/universes/'..universeid..'/orderedDataStores/'..name..'/scopes/'..scope..'/entries?id='..id;
+            local res, body = coro.request('POST', sendingto, toheaders(headers), json.stringify(data));
+            if res.code == 200 then
+                return json.parse(body);
+            else
+                return res.code;
+            end
+        end;
+
+        function ordereddatastore:Get(scope,entry)
+            local sendingto = url..'/v1/universes/'..universeid..'/orderedDataStores/'..name..'/scopes/'..scope..'/entries/'..entry;
+            local res, body = coro.request('GET', sendingto, toheaders(headers));
+            if res.code == 200 then
+                return json.parse(body);
+            else
+                return res.code;
+            end
+        end;
+
+        function ordereddatastore:Delete(scope,entry)
+            local sendingto = url..'/v1/universes/'..universeid..'/orderedDataStores/'..name..'/scopes/'..scope..'/entries/'..entry;
+            local res, body = coro.request('DELETE', sendingto, toheaders(headers));
+            if res.code == 200 then
+                return json.parse(body);
+            else
+                return res.code;
+            end
+        end;
+
+        function ordereddatastore:Update(scope,entry,data)
+            local sendingto = url..'/v1/universes/'..universeid..'/orderedDataStores/'..name..'/scopes/'..scope..'/entries/'..entry;
+            local res, body = coro.request('PATCH', sendingto, toheaders(headers), json.stringify(data));
+            if res.code == 200 then
+                return json.parse(body);
+            else
+                return res.code;
+            end
+        end;
+
+        function ordereddatastore:Increment(scope,entry,increment)
+            local sendingto = url..'/v1/universes/'..universeid..'/orderedDataStores/'..name..'/scopes/'..scope..'/entries/'..entry..':increment';
+            local res, body = coro.request('POST', sendingto, toheaders(headers), json.stringify({amount = increment}));
+            if res.code == 200 then
+                return json.parse(body);
+            else
+                return res.code;
+            end
+        end;
+
+        function ordereddatastore:Decrement(scope,entry,decrement)
+            local sendingto = url..'/v1/universes/'..universeid..'/orderedDataStores/'..name..'/scopes/'..scope..'/entries/'..entry..':increment';
+            local res, body = coro.request('POST', sendingto, toheaders(headers), json.stringify({amount = (-decrement)}));
+            if res.code == 200 then
+                return json.parse(body);
+            else
+                return res.code;
+            end
+        end;
+
+        return ordereddatastore;
+    end;
+
 	function wrapper:GetDataStore(datastoreName)
 		if not datastoreName then return false; end
 		local datastore = {}
 
-		function datastore:ListKeysAsync(scope,AllScopes,prefix,limit,cursor)
+		function datastore:ListKeysAsync(parameters)
 			local sendingto = url..'/standard-datastores/datastore/entries?datastoreName='..datastoreName;
-			if scope then
-				sendingto = sendingto..'&scope='..scope;
-			end
-			if AllScopes then
-				sendingto = sendingto..'&allScopes=true';
-			end
-			if prefix then
-				sendingto = sendingto..'&prefix='..prefix;
-			end
-			if limit then
-				sendingto = sendingto..'&limit='..limit;
-			end
-			if cursor then
-				sendingto = sendingto..'&cursor='..cursor;
-			end
+			if parameters and type(parameters)=='table' then
+                for k,v in pairs(parameters) do
+                    sendingto = sendingto..'&'..k..'='..v;
+                end
+            end
 			local res, body = coro.request('GET', sendingto, toheaders(headers));
 			if res.code == 200 then
 				return json.parse(body);
